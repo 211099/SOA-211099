@@ -17,6 +17,7 @@ export const Tareas = sequelize.define('tareas', {
     },
     delete: {
       type: DataTypes.DATE,
+      defaultValue: null
     }
     
   }, {
