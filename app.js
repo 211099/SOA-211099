@@ -151,6 +151,24 @@ app.delete('/delete/:id', async (req, res) => {
 });
 
 
+app.patch('/patch/completetask/:id', async (req, res) => {
+    const taskId = req.params.id;
+    
+    try {
+        const task = await Tareas.findByPk(taskId);
+
+        if (!task) {
+            return res.status(404).json({ error: 'Tarea no encontrada' });
+        }
+
+        await task.update({ status: true });
+        return res.status(200).json({ message: 'Tarea actualizada exitosamente' });
+    } catch (error) {
+        console.error('Error al actualizar la tarea:', error);
+        return res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
 
 
 //usuario
