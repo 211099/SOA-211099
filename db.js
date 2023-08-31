@@ -1,10 +1,11 @@
 import { Sequelize } from 'sequelize';
-
+import dotenv from 'dotenv';
+dotenv.config();
 
 
 // Option 3: Passing parameters separately (other dialects)
-export const sequelize = new Sequelize('restaurant', 'root', '211099', {
-  host: 'localhost',
+export const sequelize = new Sequelize('restaurant', 'root', process.env.PASSWORD_DB, {
+  host: process.env.HOST,
   dialect: 'mysql'
 });
 

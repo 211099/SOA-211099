@@ -1,13 +1,15 @@
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+dotenv.config();
 
-const llave = "asldalks12@"
+
 export const tokenSigIn = async (user) => {
     return jwt.sign(
         {
             id: user.id,
             role: user.role
         },
-        llave,
+        process.env.LLAVE_TOKEN,
         {
             expiresIn: '3h'
         }

@@ -6,6 +6,9 @@ import { compare } from './helpers/ashs.js';
 import { where } from 'sequelize';
 import { tokenSigIn } from './helpers/generarToken.js'; 
 import { verifyToken } from './helpers/generarToken.js';
+import dotenv from 'dotenv';
+dotenv.config();
+
 export const app = express();
 const port = 3000;
 
@@ -194,5 +197,5 @@ app.post('/post/sing-in', async (req,res) => {
 
 
 app.listen(port, () => {
-    console.log(`App listening on port ${port}`);
+    console.log(`App listening on port ${process.env.DATABASE_URL}`);
 });
