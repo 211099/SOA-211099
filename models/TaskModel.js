@@ -15,6 +15,10 @@ export const Tareas = sequelize.define('tareas', {
         type: DataTypes.STRING,
         allowNull: false
     },
+    status: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
     delete: {
       type: DataTypes.DATE,
       defaultValue: null
