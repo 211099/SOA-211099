@@ -20,7 +20,7 @@ export const tokenSigIn = async (user) => {
 export const verifyToken  = async (token) => {
     try {
         console.log(token)
-        return jwt.verify(token, "asldalks12@")
+        return jwt.verify(token,  process.env.LLAVE_TOKEN)
     } catch (error) {
         return null
     }
