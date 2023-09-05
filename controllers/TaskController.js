@@ -1,6 +1,7 @@
+import { verifyToken } from '../helpers/generarToken.js';
+import { Tareas } from '../models/TaskModel.js';
 
-
-const AddTask = async (res,req) => {
+export const AddTask = async (req,res) => {
     try {
         if (!req.headers.authorization) {
             res.status(401).send({error: "invalido"});
@@ -10,7 +11,7 @@ const AddTask = async (res,req) => {
         const token = req.headers.authorization.split(' ').pop();
         const tokenData = await verifyToken(token);
        
-        if (tokenData.id) {
+        if (tokenData && tokenData.id) {
             const data = req.body;
             await Tareas.create({title: data.title, description: data.description});
             res.status(200).send('tarea creada');
@@ -20,25 +21,168 @@ const AddTask = async (res,req) => {
         }
     
     } catch (error) {
+        
         res.status(500).send('ocurrio un error' + error)
     }
 }
-const DeleteTask = (res,req) => {
 
+export const DeleteTask = async (req,res)  => {
+    try {
+        if (!req.headers.authorization) {
+            res.status(409).send("invalido");
+            return;
+        }
+
+        const token = req.headers.authorization.split(' ').pop();
+        const tokenData = await verifyToken(token);
+
+        if (tokenData.id) {
+            const taskId = req.params.id;
+
+            // Actualiza el campo 'delete' con la fecha actual
+            const [updatedRows] = await Tareas.update({
+                delete: new Date()
+            }, {
+                where: { id: taskId }
+            });
+
+            // Verifica si se actualizó alguna fila
+            if (updatedRows === 0) {
+                return res.status(404).send('Tarea no encontrada.');
+            }
+
+            res.status(200).send(`Tarea con ID ${taskId} marcada como eliminada.`);
+        } else {
+            res.status(409).send({error: "invalido"});
+        }
+        
+    } catch (error) {
+        res.status(500).send(`Ocurrió un error al marcar la tarea como eliminada: ${error.message}`);
+    }
 }
-const UpdateTask = (res,req) => {
 
+export const UpdateTask = async (req,res)  => {
+    const taskId = req.params.id;
+    
+    try {
+        if (!req.headers.authorization) {
+            res.status(409).send({error: "invalido"});
+            return;
+        }
+    
+        const token = req.headers.authorization.split(' ').pop();
+        const tokenData = await verifyToken(token);
+
+        if (tokenData.id) {
+            const task = await Tareas.findByPk(taskId);
+
+            if (!task) {
+                return res.status(404).json({ error: 'Tarea no encontrada' });
+            }
+
+            await task.update({ status: true });
+            return res.status(200).json({ message: 'Tarea actualizada exitosamente' });
+
+        } else {
+            res.status(409).send({error: "invalido"});
+        }
+
+        
+    } catch (error) {
+        return res.status(500).json({ error: 'Error interno del servidor' });
+    }
 }
-const completetask = (res,req) => {
 
+export const Completetask = async (req,res)  => {
+    try {
+        if (!req.headers.authorization) {
+            res.status(409).send("invalido");
+            return;
+        }
+
+        const token = req.headers.authorization.split(' ').pop();
+        const tokenData = await verifyToken(token);
+
+        if (tokenData.id) {
+              const taskId = req.params.id;
+            const { title, description } = req.body;
+
+            // Verificar si el título y la descripción fueron enviados
+            if (!title && !description) {
+                return res.status(400).send('Debe enviar al menos un campo (title o description) para actualizar.');
+            }
+
+            // Construir los datos a actualizar
+            const updateData = {};
+            if (title) updateData.title = title;
+            if (description) updateData.description = description;
+
+            // Actualizar la tarea en la base de datos
+            const [updatedRows] = await Tareas.update(updateData, {
+                where: { id: taskId }
+            });
+
+            // Si no se actualizó ninguna fila, entonces el ID de tarea no existe
+            if (updatedRows === 0) {
+                return res.status(404).send('Tarea no encontrada.');
+            }
+
+            // Devolver la tarea actualizada
+            const updatedTask = await Tareas.findOne({
+                where: { id: taskId }
+            });
+
+            res.status(200).send('tarea actualizada');
+        } else {
+            res.status(409).send({error: "invalido"});
+        }
+        
+    } catch (error) {
+        res.status(500).send(`Ocurrió un error al actualizar: ${error.message}`);
+    }
 }
-const GetAllTask = (res,req) => {
 
+export const GetAllTask = async (res,req) => {
+    try {
+        if (!req.headers.authorization) {
+            res.status(401).send({error: "invalido"});
+            return;
+        }
+
+        const token = req.headers.authorization.split(' ').pop();
+        const tokenData = await verifyToken(token);
+
+        if (tokenData.id) {
+            const listTask = await Tareas.findAll({
+                where: {delete: null}
+            })
+            res.status(200).send(listTask)
+        } else {
+            res.status(401).send({error: "invalido"});
+        }
+
+    } catch (error) {
+        res.send('ocurrio un error', error)
+    }
 }
-const GetTask = (res,req) => {
 
+export const GetTask = async (res,req) => {
+    try {
+        const task = await Tareas.findAll({
+            where: { id: req.params.id }
+        });
+        
+        if (!task || task.length === 0) {
+            res.status(404).send('No encontrado');
+        } else {
+            res.status(200).send('Encontrado: ' + JSON.stringify(task));
+        }
+    } catch (error) {
+        res.status(500).send(error);
+        
+    }
 }
 
 
 
-export default {AddUser}
+
