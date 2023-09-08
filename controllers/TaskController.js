@@ -14,7 +14,7 @@ export const AddTask = async (req,res) => {
         if (tokenData && tokenData.id) {
             const data = req.body;
             await Tareas.create({title: data.title, description: data.description});
-            res.status(200).send('tarea creada');
+            res.status(201).send('tarea creada');
         }
         else {
             res.status(401).send({error: "invalido"});
@@ -29,7 +29,7 @@ export const AddTask = async (req,res) => {
 export const DeleteTask = async (req,res)  => {
     try {
         if (!req.headers.authorization) {
-            res.status(409).send("invalido");
+            res.status(401).send("invalido");
             return;
         }
 
@@ -53,7 +53,7 @@ export const DeleteTask = async (req,res)  => {
 
             res.status(200).send(`Tarea con ID ${taskId} marcada como eliminada.`);
         } else {
-            res.status(409).send({error: "invalido"});
+            res.status(401).send({error: "invalido"});
         }
         
     } catch (error) {
@@ -62,41 +62,9 @@ export const DeleteTask = async (req,res)  => {
 }
 
 export const UpdateTask = async (req,res)  => {
-    const taskId = req.params.id;
-    
-    try {
+   try {
         if (!req.headers.authorization) {
-            res.status(409).send({error: "invalido"});
-            return;
-        }
-    
-        const token = req.headers.authorization.split(' ').pop();
-        const tokenData = await verifyToken(token);
-
-        if (tokenData.id) {
-            const task = await Tareas.findByPk(taskId);
-
-            if (!task) {
-                return res.status(404).json({ error: 'Tarea no encontrada' });
-            }
-
-            await task.update({ status: true });
-            return res.status(200).json({ message: 'Tarea actualizada exitosamente' });
-
-        } else {
-            res.status(409).send({error: "invalido"});
-        }
-
-        
-    } catch (error) {
-        return res.status(500).json({ error: 'Error interno del servidor' });
-    }
-}
-
-export const Completetask = async (req,res)  => {
-    try {
-        if (!req.headers.authorization) {
-            res.status(409).send("invalido");
+            res.status(401).send("invalido");
             return;
         }
 
@@ -107,11 +75,7 @@ export const Completetask = async (req,res)  => {
               const taskId = req.params.id;
             const { title, description } = req.body;
 
-            // Verificar si el título y la descripción fueron enviados
-            if (!title && !description) {
-                return res.status(400).send('Debe enviar al menos un campo (title o description) para actualizar.');
-            }
-
+        
             // Construir los datos a actualizar
             const updateData = {};
             if (title) updateData.title = title;
@@ -134,7 +98,7 @@ export const Completetask = async (req,res)  => {
 
             res.status(200).send('tarea actualizada');
         } else {
-            res.status(409).send({error: "invalido"});
+            res.status(401).send({error: "invalido"});
         }
         
     } catch (error) {
@@ -142,7 +106,38 @@ export const Completetask = async (req,res)  => {
     }
 }
 
-export const GetAllTask = async (res,req) => {
+export const Completetask = async (req,res)  => {
+    const taskId = req.params.id;
+    try {
+        if (!req.headers.authorization) {
+            res.status(401).send({error: "invalido"});
+            return;
+        }
+    
+        const token = req.headers.authorization.split(' ').pop();
+        const tokenData = await verifyToken(token);
+
+        if (tokenData.id) {
+            const task = await Tareas.findByPk(taskId);
+
+            if (!task) {
+                return res.status(404).json({ error: 'Tarea no encontrada' });
+            }
+
+            await task.update({ status: true });
+            return res.status(200).json({ message: 'Tarea actualizada exitosamente' });
+
+        } else {
+            res.status(401).send({error: "invalido"});
+        }
+
+        
+    } catch (error) {
+        return res.status(500).json({ error: 'Error interno del servidor' });
+    }
+}
+
+export const GetAllTask = async (req,res) => {
     try {
         if (!req.headers.authorization) {
             res.status(401).send({error: "invalido"});
@@ -166,8 +161,9 @@ export const GetAllTask = async (res,req) => {
     }
 }
 
-export const GetTask = async (res,req) => {
+export const GetTask = async (req,res) => {
     try {
+        
         const task = await Tareas.findAll({
             where: { id: req.params.id }
         });
@@ -178,7 +174,7 @@ export const GetTask = async (res,req) => {
             res.status(200).send('Encontrado: ' + JSON.stringify(task));
         }
     } catch (error) {
-        res.status(500).send(error);
+       return res.status(500).send(error);
         
     }
 }

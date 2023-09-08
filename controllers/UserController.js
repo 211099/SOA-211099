@@ -10,7 +10,7 @@ export const LogIn = async (req,res) => {
         const password = req.body.password
         const passwordHashs = await encrypt(password)
         await User.create({email: email, password: passwordHashs})
-        res.status(200).send('usuario registrado con exito')
+        res.status(201).send('usuario registrado con exito')
     } catch (error) {
          res.status(500).send('Ocurrió un error: ' + error.message);
     }
@@ -20,14 +20,6 @@ export const Register = async (req,res) =>{
     try {
         const email = req.body.email
         const password = req.body.password
-
-         if (typeof email !== 'string' || email.trim() === '') {
-            return res.status(400).send('El campo de correo electrónico es inválido o está vacío.');
-        }
-       
-        if (typeof password !== 'string' || password.trim() === '') {
-            return res.status(400).send('El campo de contraseña es inválido o está vacío.');
-        }
         
         const users = await User.findAll({where: {email: email}} );
         
